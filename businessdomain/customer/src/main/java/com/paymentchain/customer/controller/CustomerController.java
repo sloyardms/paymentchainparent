@@ -24,10 +24,10 @@ class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable("id") long id) {
         Optional<Customer> customer = customerRepository.findById(id);
         if (customer.isPresent()) {
-            return new ResponseEntity<>(customer, HttpStatus.OK);
+            return new ResponseEntity<>(customer.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -39,23 +39,17 @@ class CustomerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable long id, @RequestBody Customer input) {
-        Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        if (optionalCustomer.isPresent()) {
-            Customer newCustomer = optionalCustomer.get();
-            newCustomer.setName(input.getName());
-            newCustomer.setPhone(input.getPhone());
-            Customer save = customerRepository.save(newCustomer);
-            return new ResponseEntity<>(save, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> put(@PathVariable("id") long id, @RequestBody Customer input) {
+        return ResponseEntity.ok(customerRepository.save(input));
     }
 
-    @DeleteMapping("/")
-    public ResponseEntity<?> delete(long id) {
-        customerRepository.deleteById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") long id) {
+        Optional<Customer> findById = customerRepository.findById(id);
+        if(findById.isPresent()){
+            customerRepository.deleteById(id);
+        }
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -24,13 +24,10 @@ class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isPresent()) {
-            return new ResponseEntity<>(product, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Product> getById(@PathVariable("id") long id) {
+        return productRepository.findById(id)
+                .map(product -> new ResponseEntity<>(product, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/")
@@ -39,23 +36,28 @@ class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable long id, @RequestBody Product input) {
-        Optional<Product> optionalProduct = productRepository.findById(id);
-        if (optionalProduct.isPresent()) {
-            Product newProduct = optionalProduct.get();
-            newProduct.setName(input.getName());
-            newProduct.setCode(input.getCode());
-            Product save = productRepository.save(newProduct);
-            return new ResponseEntity<>(save, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> put(@PathVariable("id") long id, @RequestBody Product input) {
+        Optional<Product> find = productRepository.findById(id);
+
+        Product save;
+        if(find.isPresent()){
+            Product product = find.get();
+            product.setName(input.getName());
+            product.setCode(input.getCode());
+            save = productRepository.save(product);
+        }else{
+            save = productRepository.save(input);
         }
+        return ResponseEntity.ok(save);
     }
 
-    @DeleteMapping("/")
-    public ResponseEntity<?> delete(long id) {
-        productRepository.deleteById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") long id) {
+        Optional<Product> findById = productRepository.findById(id);
+        if(findById.isPresent()){
+            productRepository.deleteById(id);
+        }
+        return ResponseEntity.ok().build();
     }
 
 }
