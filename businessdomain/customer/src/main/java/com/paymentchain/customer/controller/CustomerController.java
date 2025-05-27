@@ -8,6 +8,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +27,12 @@ class CustomerController {
 
     private final CustomerRepository customerRepository;
     private final WebClient.Builder webClientBuilder;
+    private final Environment environment;
 
-    public CustomerController(CustomerRepository customerRepository, WebClient.Builder webClientBuilder) {
+    CustomerController(CustomerRepository customerRepository, WebClient.Builder webClientBuilder, Environment environment) {
         this.customerRepository = customerRepository;
         this.webClientBuilder = webClientBuilder;
+        this.environment = environment;
     }
 
     //webClient requires HttpClient library to work properly
@@ -47,6 +50,11 @@ class CustomerController {
                 conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS));
                 conn.addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS));
             });
+
+    @GetMapping("/check")
+    public String check(){
+        return "Customer Microservice is running!: " + environment.getProperty("spring.profiles.active");
+    }
 
     @GetMapping()
     public ResponseEntity<?> list() {
