@@ -16,6 +16,7 @@ import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -43,8 +44,8 @@ class CustomerController {
             //Read Timeout: A read timeout occurs when no data was read within a certain period of time
             //Write Timeout: A write timeout occurs when a write operation cannot finish at a specific time
             .doOnConnected(conn -> {
-                    conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS));
-                    conn.addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS));
+                conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS));
+                conn.addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS));
             });
 
     @GetMapping()
@@ -71,24 +72,24 @@ class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable("id") long id, @RequestBody Customer input) {
         Optional<Customer> find = customerRepository.findById(id);
-        if(find.isPresent()){
+        if (find.isPresent()) {
             Customer customer = find.get();
             customer.setPhone(input.getPhone());
             customer.setCode(input.getCode());
             customer.setIban(input.getIban());
             customer.setNames(input.getNames());
-            customer.setAdress(input.getAdress());
+            customer.setAddress(input.getAddress());
             customer.setSurname(input.getSurname());
 
             customer.getProducts().clear();
-            if(input.getProducts() != null){
-                for(CustomerProduct p: input.getProducts()){
+            if (input.getProducts() != null) {
+                for (CustomerProduct p : input.getProducts()) {
                     p.setCustomer(customer);
                     customer.getProducts().add(p);
                 }
             }
             return ResponseEntity.ok(customerRepository.save(customer));
-        }else{
+        } else {
             return ResponseEntity.ok(customerRepository.save(input));
         }
     }
@@ -96,7 +97,7 @@ class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") long id) {
         Optional<Customer> findById = customerRepository.findById(id);
-        if(findById.isPresent()){
+        if (findById.isPresent()) {
             customerRepository.deleteById(id);
         }
         return ResponseEntity.ok().build();
@@ -106,14 +107,26 @@ class CustomerController {
     public ResponseEntity<?> getByCode(@RequestParam("id") String code) {
         Customer customer = customerRepository.findByCode(code);
         if (customer != null) {
+
+            //for each product, get the product name
             customer.getProducts().forEach(product -> product.setProductName(getProductName(product.getProductId())));
+
+            //find all transactions by a customer iban
+            customer.setTransactions(getTransactions(customer.getIban()));
+
             return ResponseEntity.ok(customer);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-    private String getProductName(long id){
+    /**
+     * Call Producto Microservice, find a product by Id and return the name of the product
+     *
+     * @param id Product Id
+     * @return Product Name
+     */
+    private String getProductName(long id) {
         WebClient build = webClientBuilder.clientConnector(new ReactorClientHttpConnector(client))
                 .baseUrl("http://localhost:8083/product")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -122,5 +135,26 @@ class CustomerController {
         JsonNode block = build.method(HttpMethod.GET).uri("/{id}", id)
                 .retrieve().bodyToMono(JsonNode.class).block();
         return block.get("name").asText();
+    }
+
+    /**
+     * Call Transaction Microservice, find all transactions by a customer iban
+     *
+     * @param iban Customer Iban
+     * @return List of Transactions
+     */
+    private List<?> getTransactions(String iban) {
+        WebClient build = webClientBuilder.clientConnector(new ReactorClientHttpConnector(client))
+                .baseUrl("http://localhost:8082/transaction")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultUriVariables(Collections.singletonMap("url", "http://localhost:8082/transaction/"))
+                .build();
+
+        List<?> transactions = build.method(HttpMethod.GET).uri(uriBuilder -> uriBuilder
+                        .path("/customer/transactions")
+                        .queryParam("ibanAccount", iban)
+                        .build())
+                .retrieve().bodyToFlux(Object.class).collectList().block();
+        return transactions;
     }
 }
