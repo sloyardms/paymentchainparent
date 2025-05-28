@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/transaction")
+@RequestMapping("/transaction/V1")
 class TransactionController {
 
     private final TransactionRepository transactionRepository;

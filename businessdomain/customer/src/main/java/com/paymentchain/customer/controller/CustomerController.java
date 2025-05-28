@@ -5,7 +5,6 @@ import com.paymentchain.customer.entities.Customer;
 import com.paymentchain.customer.entities.CustomerProduct;
 import com.paymentchain.customer.repository.CustomerRepository;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.core.env.Environment;
@@ -22,12 +21,12 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/customer/V1")
 class CustomerController {
 
     private final CustomerRepository customerRepository;
     private final Environment environment;
-    private WebClient.Builder webClientBuilder;
+    private final WebClient.Builder webClientBuilder;
 
     CustomerController(CustomerRepository customerRepository, WebClient.Builder webClientBuilder, Environment environment) {
         this.customerRepository = customerRepository;
