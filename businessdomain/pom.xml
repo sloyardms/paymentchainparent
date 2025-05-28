@@ -28,6 +28,7 @@
         <org.lombo.version>1.18.30</org.lombo.version>
         <org.springdoc.version>2.3.0</org.springdoc.version>
         <org.mockito.version>5.7.0</org.mockito.version>
+        <spring-boot-admin.version>3.4.5</spring-boot-admin.version>
     </properties>
 
     <dependencyManagement>
@@ -36,6 +37,13 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-dependencies</artifactId>
+                <version>${spring-boot-admin.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

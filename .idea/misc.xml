@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/businessdomain/billing/pom.xml" />
         <option value="$PROJECT_DIR$/businessdomain/customer/pom.xml" />
         <option value="$PROJECT_DIR$/businessdomain/transactions/pom.xml" />
+        <option value="$PROJECT_DIR$/infrastructure/spring-admin/pom.xml" />
       </list>
     </option>
   </component>
