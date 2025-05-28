@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 class CustomerController {
 
     private final CustomerRepository customerRepository;
-    private final WebClient.Builder webClientBuilder;
     private final Environment environment;
+    private WebClient.Builder webClientBuilder;
 
     CustomerController(CustomerRepository customerRepository, WebClient.Builder webClientBuilder, Environment environment) {
         this.customerRepository = customerRepository;
@@ -40,8 +40,6 @@ class CustomerController {
             //Connection Timeout: is a period within which a connection between a client and a server must be established
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
             .option(ChannelOption.SO_KEEPALIVE, true)
-            .option(EpollChannelOption.TCP_KEEPIDLE, 300)
-            .option(EpollChannelOption.TCP_KEEPINTVL, 60)
             //Response Timeout: The maximum time we wait to receive a response after sending a request
             .responseTimeout(Duration.ofSeconds(1))
             //Read Timeout: A read timeout occurs when no data was read within a certain period of time
@@ -136,9 +134,9 @@ class CustomerController {
      */
     private String getProductName(long id) {
         WebClient build = webClientBuilder.clientConnector(new ReactorClientHttpConnector(client))
-                .baseUrl("http://localhost:8083/product")
+                .baseUrl("http://PRODUCT/product")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultUriVariables(Collections.singletonMap("url", "http://localhost:8083/product/"))
+                .defaultUriVariables(Collections.singletonMap("url", "http://PRODUCT/product/"))
                 .build();
         JsonNode block = build.method(HttpMethod.GET).uri("/{id}", id)
                 .retrieve().bodyToMono(JsonNode.class).block();
@@ -153,9 +151,9 @@ class CustomerController {
      */
     private List<?> getTransactions(String iban) {
         WebClient build = webClientBuilder.clientConnector(new ReactorClientHttpConnector(client))
-                .baseUrl("http://localhost:8082/transaction")
+                .baseUrl("http://TRANSACTIONS/transaction")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultUriVariables(Collections.singletonMap("url", "http://localhost:8082/transaction/"))
+                .defaultUriVariables(Collections.singletonMap("url", "http://TRANSACTIONS/transaction/"))
                 .build();
 
         List<?> transactions = build.method(HttpMethod.GET).uri(uriBuilder -> uriBuilder
