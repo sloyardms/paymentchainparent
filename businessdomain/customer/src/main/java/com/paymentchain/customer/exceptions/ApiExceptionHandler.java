@@ -15,4 +15,10 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(standarizedApiExceptionResponse);
     }
 
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<?> handleUnknownHostException(BusinessRuleException ex){
+        StandarizedApiExceptionResponse standarizedApiExceptionResponse = new StandarizedApiExceptionResponse("BUSINESS", "Validation error", ex.getCode(), ex.getMessage());
+        return ResponseEntity.status(ex.getHttpStatus()).body(standarizedApiExceptionResponse);
+    }
+
 }
