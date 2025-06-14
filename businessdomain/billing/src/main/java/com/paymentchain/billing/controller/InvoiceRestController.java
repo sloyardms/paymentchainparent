@@ -2,6 +2,10 @@ package com.paymentchain.billing.controller;
 
 import com.paymentchain.billing.entities.Invoice;
 import com.paymentchain.billing.repository.InvoiceRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "Billing API", description = "API for managing invoices")
 @RestController
 @RequestMapping("/billing")
 public class InvoiceRestController {
@@ -18,7 +23,8 @@ public class InvoiceRestController {
     public InvoiceRestController(InvoiceRepository billingRepository) {
         this.billingRepository = billingRepository;
     }
-
+    @Operation(description = "Returns all invoices", summary = "Returns all invoices")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Found invoices"), @ApiResponse(responseCode = "500", description = "Internal Error")})
     @GetMapping()
     public List<Invoice> list() {
         return billingRepository.findAll();
